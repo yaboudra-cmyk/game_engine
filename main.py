@@ -1,6 +1,6 @@
 import tkinter as tk
 import math
-from Objects.Cube import vertices,polygons
+from Objects.Tree import Tree
 
 root = tk.Tk()
 root.title("3D Creator")
@@ -20,7 +20,7 @@ canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="white")
 canvas.pack()
 
 scene_objects = [
-    {"vertices": vertices, "position": [0,0,0], "angle": [1,0,0], "color": "green"},
+    Tree
 ]
 
 def rotate_x(v, angle):
@@ -83,32 +83,33 @@ def draw():
     sorted_polygons = []
     
     for obj in scene_objects:
-        centered_vertices = []
-        
-        vector_width = 0.5
-        vector_height = 0.5
-        vector_depth = 0.5
-        
-        for x,y,z in obj['vertices']:
-            centered_vertices.append([x-vector_width, y-vector_height, z-vector_depth])
+        for mesh in obj['meshes']:
+            centered_vertices = []
             
-        for p, color in polygons:
-            points = []
-            z_sum = 0
-            
-            for i in p:
-                x = centered_vertices[i][0]
-                y = centered_vertices[i][1]
-                z = centered_vertices[i][2]
+            vector_width = 0.5
+            vector_height = 0.5
+            vector_depth = 0.5
+               
+            for x,y,z in mesh['vertices']:
+                centered_vertices.append([x-vector_width, y-vector_height, z-vector_depth])
                 
-                rx, ry, rz = rotate_x([x,y,z], ANGLE_X) 
-                rx, ry, rz = rotate_y([rx,ry,rz], ANGLE_Y) 
-                z_sum += rz
+            for p, color in mesh['polygons']:
+                points = []
+                z_sum = 0
                 
-                sx, sy = project([rx,ry,rz], CAMERA)
-                points.extend([sx,sy])
-                
-            sorted_polygons.append((z_sum, color, points))
+                for j in p:
+                    x = centered_vertices[j][0] + mesh['position'][0]
+                    y = centered_vertices[j][1] + mesh['position'][1]
+                    z = centered_vertices[j][2] + mesh['position'][2]
+                    
+                    rx, ry, rz = rotate_x([x,y,z], ANGLE_X) 
+                    rx, ry, rz = rotate_y([rx,ry,rz], ANGLE_Y) 
+                    z_sum += rz
+                    
+                    sx, sy = project([rx,ry,rz], CAMERA)
+                    points.extend([sx,sy])
+                    
+                sorted_polygons.append((z_sum, color, points))
     
     sorted_polygons.sort(key=lambda f: f[0], reverse=True)
     
